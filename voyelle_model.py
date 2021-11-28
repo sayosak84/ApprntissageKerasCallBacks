@@ -81,7 +81,7 @@ score = best_model_binary_accuracy.evaluate(x_test, y_test, verbose=0)
 print('Test score for best_model_binary_accuracy :', score[0])
 print('Test accuracy for best_model_binary_accuracy :', score[1])
 
-# Create the accuracy model
+#Create the accuracy model
 model_accuracy = Sequential()
 model_accuracy.add(BatchNormalization(input_shape=(7,)))      # 7 values in the input set
 model_accuracy.add(Dense(200, activation='sigmoid'))
@@ -111,3 +111,35 @@ best_model_accuracy = keras.models.load_model("model/best_model_accuracy_voyelle
 score = best_model_accuracy.evaluate(x_test, y_test, verbose=0)
 print('Test score best_model_accuracy:', score[0])
 print('Test accuracy best_model_accuracy:', score[1])
+
+
+#Create the accuracy model
+model_accuracy = Sequential()
+model_accuracy.add(BatchNormalization(input_shape=(7,)))      # 7 values in the input set
+model_accuracy.add(Dense(200, activation='sigmoid'))
+model_accuracy.add(Dense(200, activation='sigmoid'))
+model_accuracy.add(Dense(10, activation='softmax'))           # 10 values in the output set => nb_classes
+model_accuracy.compile(optimizer='adam',
+					   loss='binary_crossentropy',
+					   metrics=['categorical_accuracy'])                  # categorical_accuracy : Calculates how often predictions match one-hot labels.
+
+log_dir = "logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+tensorboard_callback = TensorBoard(log_dir=log_dir, histogram_freq=1)
+model_checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
+	filepath="model/best_model_categorical_accuracy_voyelles",
+	monitor='val_categorical_accuracy',
+	mode='max',
+	verbose=1,
+	save_best_only=True)
+
+model_accuracy.fit(x=x_train,
+				   y=y_train,
+				   epochs=20,
+				   validation_data=(x_valid, y_valid),
+				   callbacks=[model_checkpoint_callback, tensorboard_callback])
+
+best_model_accuracy = keras.models.load_model("model/best_model_categorical_accuracy_voyelles")
+
+score = best_model_accuracy.evaluate(x_test, y_test, verbose=0)
+print('Test score best_model_categorical_accuracy:', score[0])
+print('Test accuracy best_model_categorical_accuracy:', score[1])
